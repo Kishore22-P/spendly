@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#164B3B">
+  <title>Budget Management — Spendly</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');</script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="appSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="mobile-topbar" id="appTopbar"></header>
+
+      <main class="main-content page-enter">
+        <div class="report-nav-bar">
+          <div class="report-pills" role="navigation" aria-label="Report Switcher">
+            <a href="daily-report.html" class="report-pill">Daily</a>
+            <a href="weekly-report.html" class="report-pill">Weekly</a>
+            <a href="monthly-report.html" class="report-pill">Monthly</a>
+            <a href="budget.html" class="report-pill active">Budgets</a>
+          </div>
+        </div>
+
+        <div class="page-header">
+          <div>
+            <h1 class="welcome-greeting">Budget Management</h1>
+            <p class="welcome-subtitle">Set spending limits and receive automatic warnings at 80% utilization.</p>
+          </div>
+        </div>
+
+        <!-- Budget Progress Cards -->
+        <section class="budget-grid">
+          <article class="card budget-card">
+            <div class="card-header" style="margin-bottom: 0;">
+              <h2 class="card-title">Daily Budget</h2>
+              <span id="dailyStatusBadge" class="badge badge-neutral">Not Set</span>
+            </div>
+            <div class="budget-numbers">
+              <div class="budget-num-item"><span>Budget</span><strong class="tabular-nums" id="dailyBudgetTotal">Not set</strong></div>
+              <div class="budget-num-item"><span>Spent</span><strong class="tabular-nums" id="dailyBudgetSpent">₹0</strong></div>
+              <div class="budget-num-item"><span>Remaining</span><strong class="tabular-nums" id="dailyBudgetRemaining">—</strong></div>
+            </div>
+            <div>
+              <div class="progress-track">
+                <div class="progress-fill" id="dailyProgressBar" style="width: 0%;"></div>
+              </div>
+              <p class="card-subtitle" id="dailyPercentText" style="margin-top: 6px;">Set a budget below</p>
+            </div>
+            <div id="dailyAlertBox" class="hidden"></div>
+          </article>
+
+          <article class="card budget-card">
+            <div class="card-header" style="margin-bottom: 0;">
+              <h2 class="card-title">Weekly Budget</h2>
+              <span id="weeklyStatusBadge" class="badge badge-neutral">Not Set</span>
+            </div>
+            <div class="budget-numbers">
+              <div class="budget-num-item"><span>Budget</span><strong class="tabular-nums" id="weeklyBudgetTotal">Not set</strong></div>
+              <div class="budget-num-item"><span>Spent</span><strong class="tabular-nums" id="weeklyBudgetSpent">₹0</strong></div>
+              <div class="budget-num-item"><span>Remaining</span><strong class="tabular-nums" id="weeklyBudgetRemaining">—</strong></div>
+            </div>
+            <div>
+              <div class="progress-track">
+                <div class="progress-fill" id="weeklyProgressBar" style="width: 0%;"></div>
+              </div>
+              <p class="card-subtitle" id="weeklyPercentText" style="margin-top: 6px;">Set a budget below</p>
+            </div>
+            <div id="weeklyAlertBox" class="hidden"></div>
+          </article>
+
+          <article class="card budget-card">
+            <div class="card-header" style="margin-bottom: 0;">
+              <h2 class="card-title">Monthly Budget</h2>
+              <span id="monthlyStatusBadge" class="badge badge-neutral">Not Set</span>
+            </div>
+            <div class="budget-numbers">
+              <div class="budget-num-item"><span>Budget</span><strong class="tabular-nums" id="monthlyBudgetTotal">Not set</strong></div>
+              <div class="budget-num-item"><span>Spent</span><strong class="tabular-nums" id="monthlyBudgetSpent">₹0</strong></div>
+              <div class="budget-num-item"><span>Remaining</span><strong class="tabular-nums" id="monthlyBudgetRemaining">—</strong></div>
+            </div>
+            <div>
+              <div class="progress-track">
+                <div class="progress-fill" id="monthlyProgressBar" style="width: 0%;"></div>
+              </div>
+              <p class="card-subtitle" id="monthlyPercentText" style="margin-top: 6px;">Set a budget below</p>
+            </div>
+            <div id="monthlyAlertBox" class="hidden"></div>
+          </article>
+        </section>
+
+        <!-- Configure Budgets Form -->
+        <section class="card" style="max-width: 720px;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Configure Budget Limits</h2>
+              <p class="card-subtitle">Saved securely per user in Firebase Firestore. Leave 0 or blank to disable a limit.</p>
+            </div>
+          </div>
+          <form id="budgetForm" novalidate>
+            <div class="form-grid-2" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+              <div class="form-group">
+                <label class="form-label" for="dailyBudgetInput">Daily Budget (₹)</label>
+                <input type="number" id="dailyBudgetInput" class="form-control tabular-nums" placeholder="e.g., 500" min="0" step="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="weeklyBudgetInput">Weekly Budget (₹)</label>
+                <input type="number" id="weeklyBudgetInput" class="form-control tabular-nums" placeholder="e.g., 3000" min="0" step="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="monthlyBudgetInput">Monthly Budget (₹)</label>
+                <input type="number" id="monthlyBudgetInput" class="form-control tabular-nums" placeholder="e.g., 10000" min="0" step="1">
+              </div>
+            </div>
+            <button type="submit" id="saveBudgetsBtn" class="btn btn-primary">Save Budget Limits</button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <a href="add-expense.html" class="fab-add">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Add Expense
+    </a>
+
+    <nav class="bottom-nav" id="appBottomNav" aria-label="Mobile Navigation"></nav>
+  </div>
+
+  <script type="module" src="./js/budget.js"></script>
+</body>
+</html>

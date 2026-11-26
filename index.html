@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0C4228">
+  <meta name="description" content="Spendly — Track Your Money. Control Your Spending.">
+  <title>Spendly</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');</script>
+  <noscript><meta http-equiv="refresh" content="2;url=login.html"></noscript>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --sp-bg: #F3F8F5;
+      --sp-dot: #16A34A;
+      --sp-ring: rgba(22, 163, 74, 0.34);
+    }
+
+    [data-theme="dark"] {
+      --sp-bg: #050B08;
+      --sp-dot: #4ADE80;
+      --sp-ring: rgba(74, 222, 128, 0.35);
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background-color: var(--sp-bg);
+    }
+
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 44%, rgba(22, 163, 74, 0.16) 0%, transparent 52%),
+        radial-gradient(circle at 25% 78%, rgba(245, 158, 11, 0.1) 0%, transparent 45%);
+      transition: opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1), transform 0.48s cubic-bezier(0.22, 1, 0.36, 1), filter 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .splash-screen.is-leaving {
+      opacity: 0;
+      transform: scale(1.1);
+      filter: blur(12px);
+    }
+
+    .splash-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 280px;
+      height: 280px;
+    }
+
+    /* Liquid morphing gradient halo */
+    .splash-liquid {
+      position: absolute;
+      width: 248px;
+      height: 248px;
+      background: linear-gradient(135deg, rgba(22, 163, 74, 0.36), rgba(245, 158, 11, 0.24), rgba(52, 211, 153, 0.32));
+      filter: blur(22px);
+      border-radius: 58% 42% 62% 38% / 44% 56% 44% 56%;
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+    }
+
+    /* Circular sonic/tap radar ripples */
+    .splash-radar,
+    .splash-radar-2 {
+      position: absolute;
+      width: 224px;
+      height: 224px;
+      border-radius: 50%;
+      border: 1.5px solid var(--sp-ring);
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    /* Circular glass medallion housing the Spendly logo */
+    .splash-medallion {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      padding: 3px;
+      background: conic-gradient(from 0deg, #16A34A, #4ADE80, #FBBF24, #0C4228, #16A34A);
+      box-shadow:
+        0 28px 64px -14px rgba(12, 66, 40, 0.5),
+        0 0 36px rgba(34, 197, 94, 0.22);
+      opacity: 0;
+      transform: perspective(900px) scale(0.65) rotateY(-24deg);
+    }
+
+    .splash-medallion-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .splash-medallion-inner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.85) 50%, transparent 75%);
+      transform: translateX(-160%);
+      pointer-events: none;
+    }
+
+    .splash-logo-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Minimal 3-dot wave loader */
+    .splash-dots {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      opacity: 0;
+    }
+
+    .splash-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--sp-dot);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+    }
+
+    .splash-dots span:nth-child(2) {
+      background-color: #FBBF24;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+
+    /* Active Animations */
+    .is-animating .splash-liquid {
+      animation: liquidMorph 3s ease-in-out infinite alternate, liquidFadeIn 0.8s ease forwards;
+    }
+
+    .is-animating .splash-radar {
+      animation: radarRipple 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s infinite;
+    }
+
+    .is-animating .splash-radar-2 {
+      animation: radarRipple 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.85s infinite;
+    }
+
+    .is-animating .splash-medallion {
+      animation: medallionFlipIn 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+                 medallionFloat 1.8s ease-in-out 0.95s infinite alternate;
+    }
+
+    .is-animating .splash-medallion-inner::after {
+      animation: medallionSheen 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.65s forwards;
+    }
+
+    .is-animating .splash-dots {
+      animation: dotsAppear 0.4s ease 0.45s forwards;
+    }
+
+    .is-animating .splash-dots span {
+      animation: dotBounce 0.9s ease-in-out infinite alternate;
+    }
+    .is-animating .splash-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .is-animating .splash-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes medallionFlipIn {
+      0% {
+        opacity: 0;
+        transform: perspective(900px) scale(0.62) rotateY(-26deg) translateY(18px);
+        filter: blur(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: perspective(900px) scale(1) rotateY(0deg) translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes medallionFloat {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-6px) scale(1.015); }
+    }
+
+    @keyframes liquidFadeIn {
+      to { opacity: 0.95; transform: scale(1); }
+    }
+
+    @keyframes liquidMorph {
+      0% { border-radius: 58% 42% 62% 38% / 44% 56% 44% 56%; transform: rotate(0deg) scale(1); }
+      100% { border-radius: 42% 58% 38% 62% / 56% 44% 56% 44%; transform: rotate(35deg) scale(1.08); }
+    }
+
+    @keyframes radarRipple {
+      0% { opacity: 0.75; transform: scale(0.95); }
+      100% { opacity: 0; transform: scale(1.52); }
+    }
+
+    @keyframes medallionSheen {
+      to { transform: translateX(160%); }
+    }
+
+    @keyframes dotsAppear {
+      to { opacity: 1; }
+    }
+
+    @keyframes dotBounce {
+      from { transform: translateY(0) scale(0.85); opacity: 0.55; }
+      to { transform: translateY(-6px) scale(1.15); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main id="splashScreen" class="splash-screen" aria-label="Spendly">
+    <div class="splash-stage">
+      <div class="splash-liquid" aria-hidden="true"></div>
+      <div class="splash-radar" aria-hidden="true"></div>
+      <div class="splash-radar-2" aria-hidden="true"></div>
+      <div class="splash-medallion">
+        <div class="splash-medallion-inner">
+          <img id="splashLogoImg" src="./assets/images/logo.png" alt="Spendly" class="splash-logo-img">
+        </div>
+      </div>
+    </div>
+    <div class="splash-dots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+  </main>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').then(function (reg) {
+        reg.update();
+      }).catch(function () {});
+    }
+
+    (function startSplash() {
+      var screen = document.getElementById('splashScreen');
+      var img = document.getElementById('splashLogoImg');
+      var started = false;
+
+      function runAnimation() {
+        if (started) return;
+        started = true;
+        void screen.offsetWidth;
+        screen.classList.add('is-animating');
+
+        setTimeout(function () {
+          screen.classList.add('is-leaving');
+          setTimeout(function () {
+            try {
+              sessionStorage.setItem('spendly_splash_ts', String(Date.now()));
+            } catch (e) {}
+            window.location.replace('login.html');
+          }, 480);
+        }, 2250);
+      }
+
+      if (img.complete && img.naturalWidth > 0) {
+        requestAnimationFrame(runAnimation);
+      } else {
+        img.addEventListener('load', function () {
+          requestAnimationFrame(runAnimation);
+        });
+        img.addEventListener('error', runAnimation);
+        setTimeout(runAnimation, 350);
+      }
+    })();
+  </script>
+</body>
+</html>

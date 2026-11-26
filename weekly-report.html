@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#164B3B">
+  <title>Weekly Expense Tracker — Spendly</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');</script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="appSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="mobile-topbar" id="appTopbar"></header>
+
+      <main class="main-content page-enter">
+        <div class="report-nav-bar">
+          <div class="report-pills" role="navigation" aria-label="Report Switcher">
+            <a href="daily-report.html" class="report-pill">Daily</a>
+            <a href="weekly-report.html" class="report-pill active">Weekly</a>
+            <a href="monthly-report.html" class="report-pill">Monthly</a>
+            <a href="budget.html" class="report-pill">Budgets</a>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" id="prevWeekBtn" class="btn btn-outline btn-sm">&larr; Prev Week</button>
+            <button type="button" id="currentWeekBtn" class="btn btn-secondary btn-sm">This Week</button>
+            <button type="button" id="nextWeekBtn" class="btn btn-outline btn-sm">Next &rarr;</button>
+          </div>
+        </div>
+
+        <div class="page-header">
+          <div>
+            <h1 class="welcome-greeting">Weekly Expense Tracker</h1>
+            <p class="welcome-subtitle" id="weekRangeLabel">Monday to Sunday</p>
+          </div>
+        </div>
+
+        <section class="summary-grid">
+          <article class="stat-card stat-card-featured">
+            <div class="stat-top">
+              <span class="stat-label">Weekly Total Spending</span>
+              <span class="stat-icon" title="Indian Rupee (₹)" aria-label="Indian Rupee">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 8h12"/><path d="M6 13l8.5 8"/><path d="M6 13h3"/><path d="M9 13c6.667 0 6.667-10 0-10"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="weeklyTotalValue">₹0</div>
+            <span class="stat-meta">Monday – Sunday</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Average Daily Spending</span>
+              <span class="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="weeklyAvgValue">₹0</div>
+            <span class="stat-meta">Across 7 calendar days</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Highest Spending Day</span>
+              <span class="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </span>
+            </div>
+            <div class="stat-value" id="weeklyHighestDayValue">—</div>
+            <span class="stat-meta" id="weeklyHighestDayMeta">No spending this week</span>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Weekly Transactions</span>
+              <span class="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="weeklyTxCountValue">0</div>
+            <span class="stat-meta">Total entries</span>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Daily Spending Bar Chart</h2>
+                <p class="card-subtitle">Monday through Sunday</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="weeklyBarChart"></canvas>
+              <div id="weeklyChartEmpty" class="empty-state hidden">
+                <div class="empty-state-title">No expenses this week</div>
+                <p class="empty-state-text">Log an expense or browse a previous week.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-header">
+              <h2 class="card-title">Monday – Sunday Breakdown</h2>
+            </div>
+            <div id="weeklyDayBreakdown" class="category-breakdown-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <a href="add-expense.html" class="fab-add">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Add Expense
+    </a>
+
+    <nav class="bottom-nav" id="appBottomNav" aria-label="Mobile Navigation"></nav>
+  </div>
+
+  <script type="module" src="./js/weekly-report.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" fill="none">
+  <rect width="48" height="48" rx="14" fill="#164B3B"/>
+  <rect x="9" y="13.5" width="30" height="21" rx="5.5" fill="#FFFFFF" fill-opacity="0.12" stroke="#DFF3E7" stroke-width="2"/>
+  <path d="M9 20.5H39" stroke="#DFF3E7" stroke-width="2"/>
+  <rect x="27" y="24" width="12" height="7" rx="3.5" fill="#35A66F"/>
+  <circle cx="30.5" cy="27.5" r="1.5" fill="#FFFFFF"/>
+  <path d="M15 27.5H22" stroke="#DFF3E7" stroke-width="2" stroke-linecap="round"/>
+  <text x="60" y="31" font-family="Plus Jakarta Sans, Inter, system-ui, sans-serif" font-size="24" font-weight="800" fill="#164B3B" letter-spacing="-0.5">Spendly</text>
+</svg>

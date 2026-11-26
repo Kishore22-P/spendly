@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0C4228">
+  <title>Sign In — Spendly</title>
+  <script>
+    (function () {
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');
+      try {
+        var splashTs = Number(sessionStorage.getItem('spendly_splash_ts') || 0);
+        var skipFlag = sessionStorage.getItem('spendly_skip_login_splash') === '1';
+        sessionStorage.removeItem('spendly_skip_login_splash');
+        var fromIndex = splashTs > 0 && (Date.now() - splashTs) < 8000;
+        if (fromIndex || skipFlag) {
+          if (fromIndex) sessionStorage.removeItem('spendly_splash_ts');
+          document.documentElement.classList.add('no-login-splash');
+        }
+      } catch (e) { }
+    })();
+  </script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css?v=5">
+  <link rel="stylesheet" href="./css/auth.css?v=5">
+  <style>
+    .no-login-splash .login-splash-overlay {
+      display: none !important;
+    }
+
+    html:not(.no-login-splash):not(.splash-done) .auth-shell {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .login-splash-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+      background-color: #F3F8F5;
+      background-image:
+        radial-gradient(circle at 50% 44%, rgba(22, 163, 74, 0.16) 0%, transparent 52%),
+        radial-gradient(circle at 25% 78%, rgba(245, 158, 11, 0.1) 0%, transparent 45%);
+      transition: opacity 0.48s cubic-bezier(0.22, 1, 0.36, 1), transform 0.48s cubic-bezier(0.22, 1, 0.36, 1), filter 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    [data-theme="dark"] .login-splash-overlay {
+      background-color: #050B08;
+    }
+
+    .login-splash-overlay.is-leaving {
+      opacity: 0;
+      transform: scale(1.1);
+      filter: blur(12px);
+      pointer-events: none;
+    }
+
+    .login-splash-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 280px;
+      height: 280px;
+    }
+
+    .login-splash-liquid {
+      position: absolute;
+      width: 248px;
+      height: 248px;
+      background: linear-gradient(135deg, rgba(22, 163, 74, 0.36), rgba(245, 158, 11, 0.24), rgba(52, 211, 153, 0.32));
+      filter: blur(22px);
+      border-radius: 58% 42% 62% 38% / 44% 56% 44% 56%;
+      opacity: 0;
+      transform: scale(0.5);
+      pointer-events: none;
+    }
+
+    .login-splash-radar,
+    .login-splash-radar-2 {
+      position: absolute;
+      width: 224px;
+      height: 224px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(22, 163, 74, 0.34);
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    [data-theme="dark"] .login-splash-radar,
+    [data-theme="dark"] .login-splash-radar-2 {
+      border-color: rgba(74, 222, 128, 0.35);
+    }
+
+    .login-splash-medallion {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      padding: 3px;
+      background: conic-gradient(from 0deg, #16A34A, #4ADE80, #FBBF24, #0C4228, #16A34A);
+      box-shadow:
+        0 28px 64px -14px rgba(12, 66, 40, 0.5),
+        0 0 36px rgba(34, 197, 94, 0.22);
+      opacity: 0;
+      transform: perspective(900px) scale(0.65) rotateY(-24deg);
+    }
+
+    .login-splash-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .login-splash-inner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.85) 50%, transparent 75%);
+      transform: translateX(-160%);
+      pointer-events: none;
+    }
+
+    .login-splash-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .login-splash-dots {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      opacity: 0;
+    }
+
+    .login-splash-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #16A34A;
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+    }
+
+    [data-theme="dark"] .login-splash-dots span {
+      background-color: #4ADE80;
+    }
+
+    .login-splash-dots span:nth-child(2) {
+      background-color: #FBBF24;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+
+    .is-animating .login-splash-liquid {
+      animation: loginLiquidMorph 3s ease-in-out infinite alternate, loginLiquidFadeIn 0.8s ease forwards;
+    }
+
+    .is-animating .login-splash-radar {
+      animation: loginRadarRipple 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s infinite;
+    }
+
+    .is-animating .login-splash-radar-2 {
+      animation: loginRadarRipple 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.85s infinite;
+    }
+
+    .is-animating .login-splash-medallion {
+      animation: loginMedallionFlipIn 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+                 loginMedallionFloat 1.8s ease-in-out 0.95s infinite alternate;
+    }
+
+    .is-animating .login-splash-inner::after {
+      animation: loginMedallionSheen 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.65s forwards;
+    }
+
+    .is-animating .login-splash-dots {
+      animation: loginDotsAppear 0.4s ease 0.45s forwards;
+    }
+
+    .is-animating .login-splash-dots span {
+      animation: loginDotBounce 0.9s ease-in-out infinite alternate;
+    }
+    .is-animating .login-splash-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .is-animating .login-splash-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes loginMedallionFlipIn {
+      0% {
+        opacity: 0;
+        transform: perspective(900px) scale(0.62) rotateY(-26deg) translateY(18px);
+        filter: blur(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: perspective(900px) scale(1) rotateY(0deg) translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes loginMedallionFloat {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-6px) scale(1.015); }
+    }
+
+    @keyframes loginLiquidFadeIn {
+      to { opacity: 0.95; transform: scale(1); }
+    }
+
+    @keyframes loginLiquidMorph {
+      0% { border-radius: 58% 42% 62% 38% / 44% 56% 44% 56%; transform: rotate(0deg) scale(1); }
+      100% { border-radius: 42% 58% 38% 62% / 56% 44% 56% 44%; transform: rotate(35deg) scale(1.08); }
+    }
+
+    @keyframes loginRadarRipple {
+      0% { opacity: 0.75; transform: scale(0.95); }
+      100% { opacity: 0; transform: scale(1.52); }
+    }
+
+    @keyframes loginMedallionSheen {
+      to {
+        transform: translateX(160%);
+      }
+    }
+
+    @keyframes loginDotsAppear {
+      to { opacity: 1; }
+    }
+
+    @keyframes loginDotBounce {
+      from { transform: translateY(0) scale(0.85); opacity: 0.55; }
+      to { transform: translateY(-6px) scale(1.15); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body class="auth-page" data-auth-page="login">
+  <!-- Logo-only animated splash shown on direct site open before revealing login -->
+  <div id="loginSplashOverlay" class="login-splash-overlay" aria-hidden="true">
+    <div class="login-splash-stage">
+      <div class="login-splash-liquid"></div>
+      <div class="login-splash-radar"></div>
+      <div class="login-splash-radar-2"></div>
+      <div class="login-splash-medallion">
+        <div class="login-splash-inner">
+          <img id="loginSplashImg" src="./assets/images/logo.png" alt="Spendly" class="login-splash-img">
+        </div>
+      </div>
+    </div>
+    <div class="login-splash-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <main class="auth-shell page-enter">
+    <div class="auth-brand">
+      <a href="index.html" class="auth-brand-logo-wrap" aria-label="Spendly Home">
+        <img src="./assets/images/logo.png" alt="Spendly — Track Your Money. Control Your Spending."
+          class="auth-brand-logo">
+      </a>
+    </div>
+
+    <div id="firebaseConfigBanner" class="firebase-setup-banner hidden">
+      <div><strong>Setup Needed:</strong> Paste your Firebase Web App config into <code>js/firebase.js</code> to sign
+        in.</div>
+    </div>
+
+    <section class="auth-card">
+      <h1 class="auth-heading">Welcome back</h1>
+      <p class="auth-subheading">Sign in to manage your personal expenses.</p>
+
+      <div id="authStatus" class="auth-status hidden" role="alert"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </span>
+            <input type="email" id="loginEmail" class="form-control has-left-icon" placeholder="you@example.com"
+              autocomplete="email" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <input type="password" id="loginPassword" class="form-control has-left-icon has-right-btn"
+              placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="input-action-btn" data-toggle-password="loginPassword"
+              aria-label="Show password">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe" checked>
+            <span>Remember me</span>
+          </label>
+          <a href="forgot-password.html" class="auth-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" id="loginSubmitBtn" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+
+      <div class="auth-divider">or continue with</div>
+
+      <button type="button" id="googleSignInBtn" class="btn btn-google btn-block">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4"
+            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z" />
+          <path fill="#34A853"
+            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z" />
+          <path fill="#FBBC05"
+            d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z" />
+          <path fill="#EA4335"
+            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z" />
+        </svg>
+        Continue with Google
+      </button>
+
+      <p class="auth-footer">
+        Don't have an account? <a href="register.html" class="auth-link">Create one</a>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      if (document.documentElement.classList.contains('no-login-splash')) return;
+      var overlay = document.getElementById('loginSplashOverlay');
+      var img = document.getElementById('loginSplashImg');
+      if (!overlay) return;
+
+      var started = false;
+      function play() {
+        if (started) return;
+        started = true;
+        void overlay.offsetWidth;
+        overlay.classList.add('is-animating');
+        setTimeout(function () {
+          document.documentElement.classList.add('splash-done');
+          overlay.classList.add('is-leaving');
+          setTimeout(function () {
+            overlay.remove();
+          }, 500);
+        }, 2250);
+      }
+
+      if (img && img.complete && img.naturalWidth > 0) {
+        requestAnimationFrame(play);
+      } else if (img) {
+        img.addEventListener('load', function () { requestAnimationFrame(play); });
+        img.addEventListener('error', play);
+        setTimeout(play, 350);
+      } else {
+        requestAnimationFrame(play);
+      }
+    })();
+
+    if (window.location.protocol === 'file:') {
+      var s = document.getElementById('authStatus');
+      if (s) {
+        s.classList.remove('hidden');
+        s.innerHTML = '<div class="alert alert-danger"><div><strong>Local Server Required:</strong> Open this app using <code>http://localhost:8080/login.html</code> (for example via <code>python -m http.server 8080</code>), not by opening the HTML file directly.</div></div>';
+      }
+    }
+  </script>
+  <script type="module" src="./js/auth.js?v=5"></script>
+</body>
+
+</html>

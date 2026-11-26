@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#164B3B">
+  <title>Dashboard — Spendly</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');</script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="appSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="mobile-topbar" id="appTopbar"></header>
+
+      <main class="main-content page-enter">
+        <div class="page-header">
+          <div>
+            <h1 class="welcome-greeting" id="welcomeHeading">Good Morning!</h1>
+            <p class="welcome-subtitle">Let's understand your spending today.</p>
+          </div>
+          <div class="date-pill">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            <span id="currentDateDisplay">Loading date...</span>
+          </div>
+        </div>
+
+        <div id="dashboardBudgetAlert" class="hidden"></div>
+
+        <!-- Skeleton Summary Cards -->
+        <div id="summarySkeleton" class="summary-grid" aria-hidden="true">
+          <div class="stat-card"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-value"></div></div>
+          <div class="stat-card"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-value"></div></div>
+          <div class="stat-card"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-value"></div></div>
+          <div class="stat-card"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-value"></div></div>
+        </div>
+
+        <!-- Live Financial Summary Cards -->
+        <section id="summaryCards" class="summary-grid hidden" aria-label="Financial Summary">
+          <article class="stat-card stat-card-featured">
+            <div class="stat-top">
+              <span class="stat-label">Today's Spending</span>
+              <span class="stat-icon" title="Indian Rupee (₹)" aria-label="Indian Rupee">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 8h12"/><path d="M6 13l8.5 8"/><path d="M6 13h3"/><path d="M9 13c6.667 0 6.667-10 0-10"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="todaySpendingValue">₹0</div>
+            <div class="stat-meta" id="todayCountMeta">0 transactions today</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">This Week's Spending</span>
+              <span class="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="weekSpendingValue">₹0</div>
+            <div class="stat-meta" id="weekCountMeta">0 this week</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">This Month's Spending</span>
+              <span class="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="monthSpendingValue">₹0</div>
+            <div class="stat-meta" id="monthCountMeta">0 this month</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Total Transactions</span>
+              <span class="stat-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/></svg>
+              </span>
+            </div>
+            <div class="stat-value tabular-nums" id="totalTransactionsValue">0</div>
+            <div class="stat-meta" id="totalTxMeta">All recorded entries</div>
+          </article>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="dashboard-grid">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Spending Overview</h2>
+                <p class="card-subtitle">Track trends across periods</p>
+              </div>
+              <div class="segmented-tabs" role="tablist" aria-label="Chart Period">
+                <button type="button" class="segmented-tab active" data-chart-period="daily">Daily</button>
+                <button type="button" class="segmented-tab" data-chart-period="weekly">Weekly</button>
+                <button type="button" class="segmented-tab" data-chart-period="monthly">Monthly</button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="spendingOverviewChart"></canvas>
+              <div id="overviewChartEmpty" class="empty-state hidden">
+                <div class="empty-state-title">No chart data yet</div>
+                <p class="empty-state-text">Add expenses to visualize your spending trend.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">By Category (This Month)</h2>
+                <p class="card-subtitle">Where your money goes</p>
+              </div>
+              <a href="monthly-report.html" class="btn btn-ghost btn-sm">Details</a>
+            </div>
+            <div class="chart-container-sm">
+              <canvas id="categoryDoughnutChart"></canvas>
+              <div id="categoryChartEmpty" class="empty-state hidden">
+                <div class="empty-state-title">No monthly expenses</div>
+                <p class="empty-state-text">Category breakdown appears automatically.</p>
+              </div>
+            </div>
+            <div id="categoryDoughnutLegend" class="category-breakdown-list" style="margin-top: 14px; gap: 8px;"></div>
+          </article>
+        </section>
+
+        <!-- Recent Transactions -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Recent Transactions</h2>
+              <p class="card-subtitle">Your latest five expense entries</p>
+            </div>
+            <a href="history.html" class="btn btn-secondary btn-sm">View All</a>
+          </div>
+          <div id="recentTransactionsList" class="tx-list">
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <a href="add-expense.html" class="fab-add">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Add Expense
+    </a>
+
+    <nav class="bottom-nav" id="appBottomNav" aria-label="Mobile Navigation"></nav>
+  </div>
+
+  <script type="module" src="./js/dashboard.js"></script>
+</body>
+</html>

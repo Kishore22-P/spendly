@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#164B3B">
+  <title>Expense History — Spendly</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');</script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="appSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="mobile-topbar" id="appTopbar"></header>
+
+      <main class="main-content page-enter">
+        <div class="page-header">
+          <div>
+            <h1 class="welcome-greeting">Expense History</h1>
+            <p class="welcome-subtitle" id="historySummaryText">Loading your transactions...</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" id="exportHistoryCsvBtn" class="btn btn-outline btn-sm">Export CSV</button>
+            <button type="button" id="clearFiltersBtn" class="btn btn-ghost btn-sm">Reset Filters</button>
+          </div>
+        </div>
+
+        <section class="card" style="margin-bottom: 20px;">
+          <div class="filters-bar" style="margin-bottom: 0;">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              <input type="search" id="searchInput" class="form-control has-left-icon" placeholder="Search by title or notes..." aria-label="Search expenses">
+            </div>
+            <select id="filterCategory" class="form-control" aria-label="Filter by category"></select>
+            <select id="filterMethod" class="form-control" aria-label="Filter by payment method"></select>
+            <input type="date" id="filterDate" class="form-control" aria-label="Filter by date">
+            <select id="sortOrder" class="form-control" aria-label="Sort order">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="card">
+          <div id="historyList" class="tx-list">
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row"></div>
+            <div class="skeleton skeleton-row"></div>
+          </div>
+          <div class="pagination-bar">
+            <span class="card-subtitle" id="paginationInfo"></span>
+            <button type="button" id="loadMoreBtn" class="btn btn-secondary btn-sm hidden">Load More</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <a href="add-expense.html" class="fab-add">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Add Expense
+    </a>
+
+    <nav class="bottom-nav" id="appBottomNav" aria-label="Mobile Navigation"></nav>
+  </div>
+
+  <script type="module" src="./js/history.js"></script>
+</body>
+</html>

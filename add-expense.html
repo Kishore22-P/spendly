@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#164B3B">
+  <title>Add Expense — Spendly</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('spendly_theme') || 'light');</script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" href="./assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="appSidebar"></aside>
+
+    <div class="main-wrapper">
+      <header class="mobile-topbar" id="appTopbar"></header>
+
+      <main class="main-content page-enter">
+        <div class="form-card">
+          <div class="page-header" style="margin-bottom: 18px;">
+            <div>
+              <h1 class="welcome-greeting" id="expenseFormHeading">Add Expense</h1>
+              <p class="welcome-subtitle" id="expenseFormSubheading">Record a new expense to your Spendly ledger.</p>
+            </div>
+            <a href="dashboard.html" class="btn btn-outline btn-sm">Back</a>
+          </div>
+
+          <section class="card">
+            <form id="expenseForm" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="expenseTitle">Expense Title <span class="required">*</span></label>
+                <input type="text" id="expenseTitle" class="form-control" placeholder="e.g., Morning Coffee, Metro Card, Grocery Run" maxlength="120" required>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="expenseAmount">Amount (₹) <span class="required">*</span></label>
+                  <input type="number" id="expenseAmount" class="form-control tabular-nums" placeholder="0.00" step="0.01" min="0.01" inputmode="decimal" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="expenseDate">Expense Date <span class="required">*</span></label>
+                  <input type="date" id="expenseDate" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="expenseCategory">Category <span class="required">*</span></label>
+                  <select id="expenseCategory" class="form-control" required></select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="expenseMethod">Payment Method <span class="required">*</span></label>
+                  <select id="expenseMethod" class="form-control" required></select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="expenseNotes">Description / Notes</label>
+                <textarea id="expenseNotes" class="form-control" placeholder="Optional details, merchant, or split info..." maxlength="500"></textarea>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+                <button type="submit" id="saveExpenseBtn" class="btn btn-primary" style="flex: 1; min-width: 160px;">Save Expense</button>
+                <button type="button" id="saveAnotherBtn" class="btn btn-secondary">Save &amp; Add Another</button>
+                <button type="button" id="deleteExpenseBtn" class="btn btn-danger hidden">Delete</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" id="appBottomNav" aria-label="Mobile Navigation"></nav>
+  </div>
+
+  <script type="module" src="./js/expense.js"></script>
+</body>
+</html>
