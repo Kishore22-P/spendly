@@ -17,11 +17,16 @@ const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@
 const { Pool, Client } = pg;
 
 function buildPgConfig(databaseOverride) {
-  if (process.env.DATABASE_URL) {
-    const isLocalUrl = /localhost|127\.0\.0\.1/i.test(process.env.DATABASE_URL);
+  const connectionString =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING;
+
+  if (connectionString) {
+    const isLocalUrl = /localhost|127\.0\.0\.1/i.test(connectionString);
     const useSsl = process.env.PGSSL === 'true' || (process.env.PGSSL !== 'false' && !isLocalUrl);
     return {
-      connectionString: process.env.DATABASE_URL,
+      connectionString,
       ssl: useSsl ? { rejectUnauthorized: false } : false
     };
   }
@@ -41,11 +46,28 @@ let dbError = null;
 let initPromise = null;
 
 async function initDatabase() {
+  const hasRemoteEnv = Boolean(
+    process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.POSTGRES_URL_NON_POOLING ||
+      process.env.PGHOST
+  );
+  if (process.env.VERCEL && !hasRemoteEnv) {
+    throw new Error(
+      'Missing PostgreSQL configuration on Vercel. Add DATABASE_URL (or connect Neon/Postgres Storage) in Vercel Project Settings -> Environment Variables and redeploy.'
+    );
+  }
+
   try {
     await pool.query('SELECT 1');
   } catch (err) {
     // Auto-create database if it does not exist yet (PostgreSQL code 3D000)
-    if (err.code === '3D000' && !process.env.DATABASE_URL) {
+    if (
+      err.code === '3D000' &&
+      !process.env.DATABASE_URL &&
+      !process.env.POSTGRES_URL &&
+      !process.env.POSTGRES_URL_NON_POOLING
+    ) {
       const targetDb = process.env.PGDATABASE || 'spendly';
       if (/^[a-zA-Z0-9_]+$/.test(targetDb)) {
         const adminClient = new Client(buildPgConfig('postgres'));
