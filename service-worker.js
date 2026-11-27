@@ -1,5 +1,5 @@
 // Spendly — Offline-Friendly App Shell Service Worker
-const CACHE_NAME = 'spendly-shell-v17';
+const CACHE_NAME = 'spendly-shell-v18';
 
 const APP_SHELL_ASSETS = [
   './',
